@@ -51,7 +51,7 @@ def main():
         'E': Task('E', 4),
         'F': Task('F', 2)
     }
-
+#test
     tasks['A'].nxt = ['C']
     tasks['B'].nxt = ['C', 'D']
     tasks['C'].nxt = ['E']
