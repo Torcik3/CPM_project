@@ -45,6 +45,7 @@ def cpm(tasks):
 
 def main():
     tasks = {
+        'START': Task('START', 0),
         'A': Task('A', 2),
         'B': Task('B', 5),
         'C': Task('C', 1),
@@ -53,6 +54,7 @@ def main():
         'F': Task('F', 2)
     }
 #test
+    tasks['START'].nxt = ['A','B']
     tasks['A'].nxt = ['C']
     tasks['B'].nxt = ['C', 'D']
     tasks['C'].nxt = ['E']
