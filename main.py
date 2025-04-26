@@ -1,4 +1,5 @@
-from collections import defaultdict
+
+from graph_drawer import draw_graph
 
 class Task:
     def __init__(self, name, duration):
@@ -65,7 +66,7 @@ def main():
     critical_path, project_duration = cpm(tasks)
     print("Ścieżka krytyczna:", " -> ".join([task.name for task in critical_path]))
     print("Minimalny czas realizacji projektu:", project_duration)
-
+    draw_graph(tasks, critical_path)
 
 
 main()
