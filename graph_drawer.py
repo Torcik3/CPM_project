@@ -1,7 +1,10 @@
+import tkinter as tk
+from tkinter import ttk
 import matplotlib.pyplot as plt
 import networkx as nx
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-def draw_graph(tasks, critical_path):
+def draw_graph(tasks, critical_path, project_duration):
     G = nx.DiGraph()
 
 
@@ -35,7 +38,6 @@ def draw_graph(tasks, critical_path):
         for i, node in enumerate(nodes):
             pos[node] = (layer, -i * 2)
 
-
     edge_colors = []
     for u, v in G.edges():
         if tasks[u] in critical_path and tasks[v] in critical_path:
@@ -46,8 +48,34 @@ def draw_graph(tasks, critical_path):
     labels = nx.get_node_attributes(G, 'label')
 
 
-    nx.draw(G, pos, with_labels=False, arrows=True, node_color='pink', edge_color=edge_colors, node_size=2000)
-    nx.draw_networkx_labels(G, pos, labels, font_size=8)
+    window = tk.Tk()
+    window.title("CPM Diagram")
 
-    plt.title("CPM Diagram - START osobna kolumna")
-    plt.show()
+
+    frame_plot = ttk.Frame(window)
+    frame_plot.pack(side="top", fill="both", expand=True)
+
+
+    frame_text = ttk.Frame(window)
+    frame_text.pack(side="bottom", fill="x")
+
+
+    fig = plt.Figure(figsize=(8, 6))
+    ax = fig.add_subplot(111)
+    nx.draw(G, pos, with_labels=False, arrows=True, node_color='pink', edge_color=edge_colors, node_size=2000, ax=ax)
+    nx.draw_networkx_labels(G, pos, labels, font_size=8, ax=ax)
+    ax.set_title("Diagram CPM")
+    ax.axis('off')
+
+
+    canvas = FigureCanvasTkAgg(fig, master=frame_plot)
+    canvas_widget = canvas.get_tk_widget()
+    canvas_widget.pack(fill="both", expand=True)
+
+
+    critical_path_str = " -> ".join([task.name for task in critical_path])
+    info_text = f"Ścieżka krytyczna:\n{critical_path_str}\n\nMinimalny czas realizacji projektu: {project_duration} dni"
+    label = ttk.Label(frame_text, text=info_text, justify="center", font=("Arial", 10))
+    label.pack(pady=10)
+
+    window.mainloop()
