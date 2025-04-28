@@ -1,74 +1,92 @@
 import tkinter as tk
 from tkinter import ttk
 
-class FormularzCPM:
-    def __init__(self, master):
-        self.lp_counter = 1
-        self.master = master
-        self.setup_gui()
+lp_counter = 1  # globalny licznik wierszy
 
-    def setup_gui(self):
-        # Ramki
-        self.lewa_ramka = tk.Frame(self.master)
-        self.lewa_ramka.pack(side="left", fill="both", expand=False, padx=10, pady=10)
+def dodanie_do_tabeli():
+    global lp_counter
+    text_nazwa = nazwa_zdarzenia.get()
+    text_czas_zd = t_zdarzenia.get()
+    text_nast_od = nastepstwo_od.get()
+    text_nast_do = nastepstwo_do.get()
 
-        self.prawa_ramka = tk.Frame(self.master)
-        self.prawa_ramka.pack(side="right", fill="both", expand=True, padx=10, pady=10)
+    # Połączenie "następstwo od" i "do" w jedną kolumnę
+    nastepstwa = f"{text_nast_od} - {text_nast_do}"
 
-        # Pola formularza
-        tk.Label(self.lewa_ramka, text="Nazwa zdarzenia:").pack(anchor="w", pady=(0, 2))
-        self.nazwa_zdarzenia = tk.Entry(self.lewa_ramka, width=30)
-        self.nazwa_zdarzenia.pack(anchor='w', pady=(0, 10))
+    # Dodanie do tabeli
+    tabela.insert("", "end", values=(lp_counter, text_nazwa, text_czas_zd, nastepstwa))
 
-        tk.Label(self.lewa_ramka, text="Czas trwania zdarzenia (dni):").pack(anchor="w", pady=(0, 2))
-        self.t_zdarzenia = tk.Entry(self.lewa_ramka, width=30)
-        self.t_zdarzenia.pack(anchor='w', pady=(0, 10))
+    # Zwiększ licznik
+    lp_counter += 1
 
-        tk.Label(self.lewa_ramka, text="Następstwo od:").pack(anchor="w", pady=(0, 2))
-        self.nastepstwo_od = tk.Entry(self.lewa_ramka, width=30)
-        self.nastepstwo_od.pack(anchor='w', pady=(0, 10))
+    # Wyczyść pola po dodaniu (opcjonalnie)
+    nazwa_zdarzenia.delete(0, tk.END)
+    t_zdarzenia.delete(0, tk.END)
+    nastepstwo_od.delete(0, tk.END)
+    nastepstwo_do.delete(0, tk.END)
 
-        tk.Label(self.lewa_ramka, text="Następstwo do:").pack(anchor="w", pady=(0, 2))
-        self.nastepstwo_do = tk.Entry(self.lewa_ramka, width=30)
-        self.nastepstwo_do.pack(anchor='w', pady=(0, 10))
+def usun_zaznaczony():
+    wybrane = tabela.selection()
+    for item in wybrane:
+        tabela.delete(item)
 
-        tk.Button(self.lewa_ramka, text="Dodaj", command=self.dodanie_do_tabeli).pack(anchor="w", pady=(10, 0))
-        tk.Button(self.lewa_ramka, text="Usuń zaznaczony", command=self.usun_zaznaczony).pack(anchor="w", pady=(5, 0))
+# Tworzenie głównego okna
+okno = tk.Tk()
+okno.title("Formularz CPM")
+okno.geometry("800x500")
 
-        # Tabela
-        kolumny = ("Lp.", "Nazwa zdarzenia", "Czas trwania zdarzenia", "Nastepstwa")
-        self.tabela = ttk.Treeview(self.prawa_ramka, columns=kolumny, show="headings")
+# Główne ramki: lewa i prawa
+lewa_ramka = tk.Frame(okno)
+lewa_ramka.pack(side="left", fill="both", expand=False, padx=10, pady=10)
 
-        for kolumna in kolumny:
-            self.tabela.heading(kolumna, text=kolumna)
-            self.tabela.column(kolumna, anchor=tk.CENTER)
+prawa_ramka = tk.Frame(okno)
+prawa_ramka.pack(side="right", fill="both", expand=True, padx=10, pady=10)
 
-        self.tabela.pack(fill="both", expand=True)
+# --- Lewa strona (formularz) ---
+etykieta_opisu = tk.Label(lewa_ramka, text="Nazwa zdarzenia:")
+etykieta_opisu.pack(anchor="w", pady=(0, 2))
+nazwa_zdarzenia = tk.Entry(lewa_ramka, width=30)
+nazwa_zdarzenia.pack(anchor='w', pady=(0, 10))
+
+etykieta_opisu = tk.Label(lewa_ramka, text="Czas trwania zdarzenia (dni):")
+etykieta_opisu.pack(anchor="w", pady=(0, 2))
+t_zdarzenia = tk.Entry(lewa_ramka, width=30)
+t_zdarzenia.pack(anchor='w', pady=(0, 10))
+
+etykieta_opisu = tk.Label(lewa_ramka, text="Następstwo od:")
+etykieta_opisu.pack(anchor="w", pady=(0, 2))
+nastepstwo_od = tk.Entry(lewa_ramka, width=30)
+nastepstwo_od.pack(anchor='w', pady=(0, 10))
+
+etykieta_opisu = tk.Label(lewa_ramka, text="Następstwo do:")
+etykieta_opisu.pack(anchor="w", pady=(0, 2))
+nastepstwo_do = tk.Entry(lewa_ramka, width=30)
+nastepstwo_do.pack(anchor='w', pady=(0, 10))
+
+przycisk = tk.Button(lewa_ramka, text="Dodaj", command=dodanie_do_tabeli)
+przycisk.pack(anchor="w", pady=(10, 0))
+
+przycisk_usun = tk.Button(lewa_ramka, text="Usuń zaznaczony", command=usun_zaznaczony)
+przycisk_usun.pack(anchor="w", pady=(5, 0))
+
+# --- Prawa strona (tabela) ---
+kolumny = ("Lp.", "Nazwa zdarzenia", "Czas trwania zdarzenia", "Nastepstwa")
+tabela = ttk.Treeview(prawa_ramka, columns=kolumny, show="headings")
+
+# Nagłówki
+tabela.heading("Lp.", text="Lp.")
+tabela.heading("Nazwa zdarzenia", text="Nazwa zdarzenia")
+tabela.heading("Czas trwania zdarzenia", text="Czas trwania zdarzenia")
+tabela.heading("Nastepstwa", text="Następstwa")
+
+# Szerokości kolumn
+tabela.column("Lp.", width=40, anchor=tk.CENTER, stretch=False)
+tabela.column("Nazwa zdarzenia", width=200, anchor=tk.CENTER)
+tabela.column("Czas trwania zdarzenia", width=150, anchor=tk.CENTER)
+tabela.column("Nastepstwa", width=200, anchor=tk.CENTER)
+
+tabela.pack(fill="both", expand=True)
 
 
-    def dodanie_do_tabeli(self):
-        text_nazwa = self.nazwa_zdarzenia.get()
-        text_czas_zd = self.t_zdarzenia.get()
-        text_nast_od = self.nastepstwo_od.get()
-        text_nast_do = self.nastepstwo_do.get()
-
-        nastepstwa = f"{text_nast_od} - {text_nast_do}"
-
-        self.tabela.insert("", "end", values=(self.lp_counter, text_nazwa, text_czas_zd, nastepstwa))
-        self.lp_counter += 1
-
-        self.nazwa_zdarzenia.delete(0, tk.END)
-        self.t_zdarzenia.delete(0, tk.END)
-        self.nastepstwo_od.delete(0, tk.END)
-        self.nastepstwo_do.delete(0, tk.END)
-
-    def usun_zaznaczony(self):
-        wybrane = self.tabela.selection()
-        for item in wybrane:
-            self.tabela.delete(item)
-
-    def pobierz_dane(self):
-        dane = []
-        for item in self.tabela.get_children():
-            dane.append(self.tabela.item(item, "values"))
-        return dane
+# Pętla aplikacji
+okno.mainloop()
