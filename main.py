@@ -12,6 +12,22 @@ class Task:
         self.late_finish = float('inf')
         self.reserve = 0
 
+def build_successors(tasks):
+    # Ensure all nxt lists are empty before building
+    for task in tasks.values():
+        task.nxt = []
+
+    # Iterate through each task and predecessors
+    for task_name, current_task in tasks.items():
+        for predecessor_name in current_task.prev:
+            # Check if the predecessor exists in the tasks dictionary
+            if predecessor_name in tasks:
+                predecessor_task = tasks[predecessor_name]
+                # Add the current task as a successor to its predecessor
+                # Avoid adding duplicates if the logic were ever run twice by mistake
+                if task_name not in predecessor_task.nxt:
+                    predecessor_task.nxt.append(task_name)
+
 def cpm(tasks):
     # early start and finish
     for task in tasks.values():
@@ -52,15 +68,12 @@ def main():
         'F': Task('F', 2)
     }
 #test
-    tasks['A'].nxt = ['C']
-    tasks['B'].nxt = ['C', 'D']
-    tasks['C'].nxt = ['E']
-    tasks['D'].nxt = ['E', 'F']
-
     tasks['C'].prev = ['A', 'B']
     tasks['D'].prev = ['B']
     tasks['E'].prev = ['C', 'D']
     tasks['F'].prev = ['D']
+
+    build_successors(tasks)
 
     critical_path, project_duration = cpm(tasks)
     print("Ścieżka krytyczna:", " -> ".join([task.name for task in critical_path]))
