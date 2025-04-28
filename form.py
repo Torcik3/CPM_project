@@ -1,92 +1,61 @@
 import tkinter as tk
 from tkinter import ttk
 
-lp_counter = 1  # globalny licznik wierszy
+tasks_data = []  # Tutaj będą dane do zapisania
 
-def dodanie_do_tabeli():
-    global lp_counter
-    text_nazwa = nazwa_zdarzenia.get()
-    text_czas_zd = t_zdarzenia.get()
-    text_nast_od = nastepstwo_od.get()
-    text_nast_do = nastepstwo_do.get()
+def dodaj_do_listy():
+    nazwa = nazwa_zdarzenia.get()
+    czas = t_zdarzenia.get()
+    poprzednik = poprzednik_entry.get()
 
-    # Połączenie "następstwo od" i "do" w jedną kolumnę
-    nastepstwa = f"{text_nast_od} - {text_nast_do}"
+    if not nazwa or not czas:
+        return  # brak wymaganych danych
 
-    # Dodanie do tabeli
-    tabela.insert("", "end", values=(lp_counter, text_nazwa, text_czas_zd, nastepstwa))
+    task = {
+        "name": nazwa,
+        "duration": int(czas),
+        "prev": poprzednik.split(",") if poprzednik else []
+    }
+    tasks_data.append(task)
 
-    # Zwiększ licznik
-    lp_counter += 1
+    # Dodaj do tabeli widocznej
+    tabela.insert("", "end", values=(nazwa, czas, poprzednik))
 
-    # Wyczyść pola po dodaniu (opcjonalnie)
+    # Wyczyść pola
     nazwa_zdarzenia.delete(0, tk.END)
     t_zdarzenia.delete(0, tk.END)
-    nastepstwo_od.delete(0, tk.END)
-    nastepstwo_do.delete(0, tk.END)
+    poprzednik_entry.delete(0, tk.END)
 
-def usun_zaznaczony():
-    wybrane = tabela.selection()
-    for item in wybrane:
-        tabela.delete(item)
+def uruchom_formularz():
+    global nazwa_zdarzenia, t_zdarzenia, poprzednik_entry, tabela
 
-# Tworzenie głównego okna
-okno = tk.Tk()
-okno.title("Formularz CPM")
-okno.geometry("800x500")
+    okno = tk.Tk()
+    okno.title("Formularz CPM")
+    okno.geometry("700x500")
 
-# Główne ramki: lewa i prawa
-lewa_ramka = tk.Frame(okno)
-lewa_ramka.pack(side="left", fill="both", expand=False, padx=10, pady=10)
+    frame = tk.Frame(okno)
+    frame.pack(padx=10, pady=10)
 
-prawa_ramka = tk.Frame(okno)
-prawa_ramka.pack(side="right", fill="both", expand=True, padx=10, pady=10)
+    tk.Label(frame, text="Nazwa zadania:").grid(row=0, column=0, sticky="w")
+    nazwa_zdarzenia = tk.Entry(frame, width=30)
+    nazwa_zdarzenia.grid(row=0, column=1)
 
-# --- Lewa strona (formularz) ---
-etykieta_opisu = tk.Label(lewa_ramka, text="Nazwa zdarzenia:")
-etykieta_opisu.pack(anchor="w", pady=(0, 2))
-nazwa_zdarzenia = tk.Entry(lewa_ramka, width=30)
-nazwa_zdarzenia.pack(anchor='w', pady=(0, 10))
+    tk.Label(frame, text="Czas trwania:").grid(row=1, column=0, sticky="w")
+    t_zdarzenia = tk.Entry(frame, width=30)
+    t_zdarzenia.grid(row=1, column=1)
 
-etykieta_opisu = tk.Label(lewa_ramka, text="Czas trwania zdarzenia (dni):")
-etykieta_opisu.pack(anchor="w", pady=(0, 2))
-t_zdarzenia = tk.Entry(lewa_ramka, width=30)
-t_zdarzenia.pack(anchor='w', pady=(0, 10))
+    tk.Label(frame, text="Poprzednicy (oddziel ',' jeśli kilka):").grid(row=2, column=0, sticky="w")
+    poprzednik_entry = tk.Entry(frame, width=30)
+    poprzednik_entry.grid(row=2, column=1)
 
-etykieta_opisu = tk.Label(lewa_ramka, text="Następstwo od:")
-etykieta_opisu.pack(anchor="w", pady=(0, 2))
-nastepstwo_od = tk.Entry(lewa_ramka, width=30)
-nastepstwo_od.pack(anchor='w', pady=(0, 10))
+    tk.Button(frame, text="Dodaj zadanie", command=dodaj_do_listy).grid(row=3, column=1, pady=10)
 
-etykieta_opisu = tk.Label(lewa_ramka, text="Następstwo do:")
-etykieta_opisu.pack(anchor="w", pady=(0, 2))
-nastepstwo_do = tk.Entry(lewa_ramka, width=30)
-nastepstwo_do.pack(anchor='w', pady=(0, 10))
+    tabela = ttk.Treeview(okno, columns=("nazwa", "czas", "poprzednicy"), show="headings")
+    tabela.heading("nazwa", text="Nazwa zadania")
+    tabela.heading("czas", text="Czas trwania")
+    tabela.heading("poprzednicy", text="Poprzednicy")
+    tabela.pack(fill="both", expand=True)
 
-przycisk = tk.Button(lewa_ramka, text="Dodaj", command=dodanie_do_tabeli)
-przycisk.pack(anchor="w", pady=(10, 0))
+    tk.Button(okno, text="Zapisz i Zamknij", command=okno.destroy).pack(pady=10)
 
-przycisk_usun = tk.Button(lewa_ramka, text="Usuń zaznaczony", command=usun_zaznaczony)
-przycisk_usun.pack(anchor="w", pady=(5, 0))
-
-# --- Prawa strona (tabela) ---
-kolumny = ("Lp.", "Nazwa zdarzenia", "Czas trwania zdarzenia", "Nastepstwa")
-tabela = ttk.Treeview(prawa_ramka, columns=kolumny, show="headings")
-
-# Nagłówki
-tabela.heading("Lp.", text="Lp.")
-tabela.heading("Nazwa zdarzenia", text="Nazwa zdarzenia")
-tabela.heading("Czas trwania zdarzenia", text="Czas trwania zdarzenia")
-tabela.heading("Nastepstwa", text="Następstwa")
-
-# Szerokości kolumn
-tabela.column("Lp.", width=40, anchor=tk.CENTER, stretch=False)
-tabela.column("Nazwa zdarzenia", width=200, anchor=tk.CENTER)
-tabela.column("Czas trwania zdarzenia", width=150, anchor=tk.CENTER)
-tabela.column("Nastepstwa", width=200, anchor=tk.CENTER)
-
-tabela.pack(fill="both", expand=True)
-
-
-# Pętla aplikacji
-okno.mainloop()
+    okno.mainloop()
